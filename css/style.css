@@ -1,0 +1,98 @@
+.row::after {
+    content: "";
+    clear: both;
+    display: table;
+  }
+  
+  [class*="col-"] {
+    float: left;
+    padding: 2px;
+  }
+
+  @media only screen and (min-width: 768px) {
+    /* For desktop: */
+    .col-05 {width: 4.165%;}
+    .col-1 {width: 8.33%;}
+    .col-2 {width: 16.66%;}
+    .col-3 {width: 25%;}
+    .col-4 {width: 33.33%;}
+    .col-5 {width: 41.66%;}
+    .col-6 {width: 50%;}
+    .col-7 {width: 58.33%;}
+    .col-8 {width: 66.66%;}
+    .col-9 {width: 75%;}
+    .col-10 {width: 83.33%;}
+    .col-11 {width: 91.66%;}
+    .col-12 {width: 100%;}
+  }
+html {
+    font-family: 'Open Sans', sans-serif;
+    letter-spacing: 0.5px;
+    font-size: 14px;
+  }
+.flex-container{
+    width: 100%;
+    margin: 0 auto;
+    display: block;
+}
+.flex-container-header {
+    display:flex;
+  }
+.header{
+  background-color: orangered;
+  vertical-align: middle;
+}
+.headertext{
+  margin: 1px;
+  font-weight: bold;
+  display: inline-block;
+
+}
+.headerLogo{
+  border: 1px solid white;
+  background-color: orangered;
+  color: white;
+  cursor: pointer;
+  font-weight: bold;
+  margin: 1px;
+}
+.headerLinks{
+  font-weight: 100;
+  color:black;
+  text-decoration: none;
+  font-size:13px;
+  margin: 1px;
+}
+.headerLinks:hover{
+  font-weight: bold;
+}
+.posts{
+  background-color: rgb(209, 209, 209);
+}
+.sl{
+  text-align: center;
+  color:gray;
+}
+.littlegraytext{
+  color: gray;
+  font-size: 12px;
+  text-decoration: none;
+
+}
+.littlegraytext:hover{
+  font-weight: bold;
+}
+.title{
+  color:black;
+  text-decoration: none;
+}
+.btnUpvoteAndFlag{
+  border:none;
+  background-color: rgb(209, 209, 209);;
+  
+  color:gray;
+}
+.btnUpvoteAndFlag:hover{
+  font-weight: bold;
+  cursor: pointer;
+}

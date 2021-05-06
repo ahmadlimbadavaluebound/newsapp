@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>News App</title>
+    <link rel="stylesheet" href="./css/style.css" />
+  </head>
+  <body>
+    <div class="col-2"></div>
+
+    <form action="index.html" onsubmit="return formAddPost();">
+        <table class="col-8 posts" id="posts">           
+            <tr class="header" >
+                <td colspan="2">
+                    <button class="headerLogo" onClick='window.location.href="index.html";'>A</button>
+                    <p class="headertext">&nbsp;News App &nbsp;<a href="AddPost.html" class="headerLinks">New</a> | <a href='#' class="headerLinks">Submit</a></p>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">Title:<input type='text' name="title" id="title" required/></td>
+            </tr>
+            <tr>
+                <td colspan="2">URL:<input type="text" name="URL" id="URL" required /></td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <input type="submit" name="Submit" value="Submit"/></td>
+        </table>
+    </form>
+    <div class="col-2"></div>
+  </body>
+  <script src="./js/app.js"></script>
+</html>
