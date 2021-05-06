@@ -25,7 +25,7 @@ class Domain {
     hostName = hostName.split(":")[0];
     //find & remove "?"
     hostName = hostName.split("?")[0];
-  
+
     return hostName;
   }
   static extractRootDomain(url) {
@@ -47,35 +47,38 @@ class Domain {
     }
     return domain;
   }
-  increamentUpvote(){
-    this.upvote++;
-  }
-  /*static  searchDomain(domainName, rootDomainArray){
-    for (var i=0; i < rootDomainArray.length; i++) {
-        if (rootDomainArray[i].domainName === domainName) {
-            return i;
-        }
+  static compareUpvote(a, b) {
+    if (a.upvote < b.upvote) {
+      return 1;
     }
-    return -1;
-}*/
+    if (a.upvote > b.upvote) {
+      return -1;
+    }
+    return 0;
+  }
+  static compareFlag(a, b) {
+    if (a.flag < b.flag) {
+      return 1;
+    }
+    if (a.flag > b.flag) {
+      return -1;
+    }
+    return 0;
+  }
 }
 
 class Post {
   //constructor to add post
-  constructor(id,title, url) {
-      this.id = id;
-      this.title = title;
-      this.url = url;
-      this.upvote = 0;
-      this.time = new Date().getTime();
-      this.flag = false;
-      this.notes = [];
-    
+  constructor(id, title, url) {
+    this.id = id;
+    this.title = title;
+    this.url = url;
+    this.upvote = 0;
+    this.time = new Date().getTime();
+    this.flag = false;
+    this.notes = [];
   }
 
-  increamentUpvote(){
-    this.upvote++;
-  }
   //validates title
   static validateTitle(title) {
     //check no of words are less than 3 or not
@@ -99,10 +102,10 @@ class NewsApp {
   constructor() {
     this.posts = JSON.parse(localStorage.getItem("posts"));
     this.rootDomains = JSON.parse(localStorage.getItem("rootDomains"));
-    if(this.posts==null || this.posts == 'undefined'){
+    if (this.posts == null || this.posts == "undefined") {
       this.posts = [];
     }
-    if(this.rootDomains==null || this.rootDomains == 'undefined'){
+    if (this.rootDomains == null || this.rootDomains == "undefined") {
       this.rootDomains = {};
     }
   }
@@ -112,11 +115,11 @@ class NewsApp {
     url = url.trim().replace(/\\/g, "");
 
     if (Post.validateTitle(title) && Post.validateURL(url)) {
-      var post = new Post(this.posts.length,title,url);
+      var post = new Post(this.posts.length, title, url);
       this.posts.push(post);
       var domain = Domain.extractRootDomain(url);
-    
-      if(this.rootDomains[domain]==undefined){
+
+      if (this.rootDomains[domain] == undefined) {
         this.rootDomains[domain] = new Domain(domain);
       }
       this.saveToLocal();
@@ -125,72 +128,83 @@ class NewsApp {
     } else {
       alert("Invalid title or url");
       return false;
-    }  
+    }
   }
 
-  saveToLocal(){
-    localStorage.setItem("posts",JSON.stringify(this.posts));
-    localStorage.setItem("rootDomains",JSON.stringify(this.rootDomains));
+  saveToLocal() {
+    localStorage.setItem("posts", JSON.stringify(this.posts));
+    localStorage.setItem("rootDomains", JSON.stringify(this.rootDomains));
   }
-  getPosts(){
+  getPosts() {
     return this.posts;
   }
 
-  getLastWeekPost(){
+  getLastWeekPost() {
     var lastWeekPosts = [];
     var lastweek = new Date();
     lastweek.setDate(lastweek.getDate() - 7);
-    for(var i=this.posts.length-1;i>=0;i--){
-      if(this.posts[i].time < lastweek){
+    for (var i = this.posts.length - 1; i >= 0; i--) {
+      if (this.posts[i].time < lastweek) {
         break;
       }
       lastWeekPosts.push(this.posts[i]);
     }
     return lastWeekPosts;
   }
-  static compare( a, b ) {
-    if ( a.upvote < b.upvote ){
+  static compare(a, b) {
+    if (a.upvote < b.upvote) {
       return 1;
     }
-    if ( a.upvote > b.upvote ){
+    if (a.upvote > b.upvote) {
       return -1;
     }
     return 0;
   }
-  getSpecificPost(id){
+  getSpecificPost(id) {
     return this.posts[id];
   }
 
-  increamentUpvote(id){
+  increamentUpvote(id) {
     this.posts[id].upvote++;
     this.rootDomains[Domain.extractRootDomain(this.posts[id].url)].upvote++;
     this.saveToLocal();
   }
-  flagUnflag(id){
+  flagUnflag(id) {
     this.posts[id].flag = !this.posts[id].flag;
-    if(this.posts[id].flag){
+    if (this.posts[id].flag) {
       this.rootDomains[Domain.extractRootDomain(this.posts[id].url)].flag++;
-    }
-    else{
+    } else {
       this.rootDomains[Domain.extractRootDomain(this.posts[id].url)].flag--;
     }
     this.saveToLocal();
   }
-  addNote(post) {
+
+  getTopSpammy(){
+    var roots = [];
+    for(var i in this.rootDomains){
+      roots.push(this.rootDomains[i]);
+    }
+    return roots.sort(Domain.compareFlag);
   }
+  getTopVoted(){
+    var roots = [];
+    for(var i in this.rootDomains){
+      roots.push(this.rootDomains[i]);
+    }
+    return roots.sort(Domain.compareUpvote);
+  }
+  addNote(post) {}
 }
 
-newsApp = new NewsApp();
+var newsApp = new NewsApp();
 
-function formAddPost(){
-  var title = document.getElementById('title').value;
-  var url = document.getElementById('URL').value.toLowerCase();
-  return newsApp.addPost(title,url);
- 
+function formAddPost() {
+  var title = document.getElementById("title").value;
+  var url = document.getElementById("URL").value.toLowerCase();
+  return newsApp.addPost(title, url);
 }
 
 function timeDiffCalc(dateFuture, dateNow) {
-
   let diffInMilliSeconds = Math.abs(dateFuture - dateNow) / 1000;
 
   // calculate days
@@ -205,39 +219,40 @@ function timeDiffCalc(dateFuture, dateNow) {
   const minutes = Math.floor(diffInMilliSeconds / 60) % 60;
   diffInMilliSeconds -= minutes * 60;
 
-  let difference = 'Posted ';
+  let difference = "Posted ";
   if (days > 0) {
-    difference +=  `${days} days, `;
+    difference += `${days} days, `;
   }
-  if(hours>0){ 
-    
-  difference +=  `${hours} hours, `;
-
+  if (hours > 0) {
+    difference += `${hours} hours, `;
   }
-  if(minutes>0){
-    
-  difference += `${minutes} minutes`; 
+  if (minutes > 0) {
+    difference += `${minutes} minutes`;
   }
-  difference += ` ago `
+  difference += ` ago `;
   return difference;
 }
 
-function loadPosts(){
+function loadPosts() {
   var posts = newsApp.getLastWeekPost();
   posts.sort(NewsApp.compare);
   var count = 1;
   var row = `<tr class="header" >
-  <td colspan="2"><button class="headerLogo" onClick="window.location.href='index.html';">A</button><p class="headertext">&nbsp; News App &nbsp;<a href="AddPost.html" class="headerLinks">New</a> | <a href='#' class="headerLinks">Submit</a></a></p></td>
+  <td colspan="2">
+      <button class="headerLogo" onClick='window.location.href="index.html";'>A</button>
+      <p class="headertext">&nbsp;News App &nbsp;<a href="AddPost.html" class="headerLinks">New</a> | <a href='MostSpammy.html' class="headerLinks">Most Spammy</a> | <a href='MostUpvoted.html' class="headerLinks">Most Upvoted</a></p>
+  </td>
 </tr>`;
-  for(var i=0;i<posts.length;i++){
-    var isFlagged = 'flag';
-    if(posts[i].flag){
-      isFlagged = 'unflag';
+  for (var i = 0; i < posts.length; i++) {
+    var isFlagged = "flag";
+    if (posts[i].flag) {
+      isFlagged = "unflag";
     }
-    row += 
-    `<tr>
+    row += `<tr>
       <td rowspan='2' class='sl'>
-        ${count}</td><td><a class='title' href='${posts[i].url}'>${posts[i].title}</a>
+        ${count}</td><td><a class='title' href='${posts[i].url}'>${
+      posts[i].title
+    }</a>
         <a href="" class='littlegraytext'>
             (${Domain.extractRootDomain(posts[i].url)})
         </a>
@@ -245,10 +260,19 @@ function loadPosts(){
     </tr>
     <tr>
       <td>
-        <button class='btnUpvoteAndFlag' onClick='increaseCount(${posts[i].id})'>^</button> <span class='littlegraytext'>${posts[i].upvote} votes</span> | 
-        <span class='littlegraytext'>${timeDiffCalc(posts[i].time, new Date())}</span> | 
+        <button class='btnUpvoteAndFlag' onClick='increaseCount(${
+          posts[i].id
+        })'>^</button> <span class='littlegraytext'>${
+      posts[i].upvote
+    } votes</span> | 
+        <span class='littlegraytext'>${timeDiffCalc(
+          posts[i].time,
+          new Date()
+        )}</span> | 
         <span class='littlegraytext'>${posts[i].notes.length} notes</span> |
-        <span class='littlegraytext'><button class='btnUpvoteAndFlag' onClick='flagUnflag(${posts[i].id})'>${isFlagged}</button></span>
+        <span class='littlegraytext'><button class='btnUpvoteAndFlag' onClick='flagUnflag(${
+          posts[i].id
+        })'>${isFlagged}</button></span>
       </td>
     </tr>`;
     count++;
@@ -256,12 +280,63 @@ function loadPosts(){
   document.getElementById("posts").innerHTML = row;
 }
 
-function increaseCount(id){
+function increaseCount(id) {
   newsApp.increamentUpvote(id);
   loadPosts();
 }
 
-function flagUnflag(id){
+function flagUnflag(id) {
   newsApp.flagUnflag(id);
   loadPosts();
+}
+
+function Spammy(){
+  var row = `<tr class="header" >
+  <td colspan="3">
+      <button class="headerLogo" onClick='window.location.href="index.html";'>A</button>
+      <p class="headertext">&nbsp;News App &nbsp;<a href="AddPost.html" class="headerLinks">New</a> | <a href='MostSpammy.html' class="headerLinks">Most Spammy</a> | <a href='MostUpvoted.html' class="headerLinks">Most Upvoted</a></p>
+  </td>
+</tr><tr>
+<th colspan="3">Most Spammy Domains</th>
+</tr>
+<tr>
+<th>sl</th><th>Domain Name</th><th>Total Flags</th></tr>`;
+
+  var spammedDomains = newsApp.getTopSpammy();
+
+  for(var i=0;i<spammedDomains.length && i < 10;i++){
+    if(spammedDomains[i].flag<1){
+      break;
+    }
+    row+= `<tr class='center'>
+      <td>${i+1}</td>
+      <td>${spammedDomains[i].domainName}</td>
+      <td>${spammedDomains[i].flag}</td>
+    </tr>`
+  }
+  document.getElementById("spammy").innerHTML = row;
+}
+
+function Upvoted(){
+  var row = `<tr class="header" >
+  <td colspan="3">
+      <button class="headerLogo" onClick='window.location.href="index.html";'>A</button>
+      <p class="headertext">&nbsp;News App &nbsp;<a href="AddPost.html" class="headerLinks">New</a> | <a href='MostSpammy.html' class="headerLinks">Most Spammy</a> | <a href='MostUpvoted.html' class="headerLinks">Most Upvoted</a></p>
+  </td>
+</tr><tr>
+<th colspan="3">Most Upvoted Domains</th>
+</tr>
+<tr>
+<th>sl</th><th>Domain Name</th><th>Total Upvotes</th></tr>`;
+
+  var topDomains = newsApp.getTopVoted();
+
+  for(var i=0;i<topDomains.length && i < 10;i++){
+    row+= `<tr class='center'>
+      <td>${i+1}</td>
+      <td>${topDomains[i].domainName}</td>
+      <td>${topDomains[i].upvote}</td>
+    </tr>`
+  }
+  document.getElementById("upvoted").innerHTML = row;
 }
