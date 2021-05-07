@@ -345,9 +345,14 @@ function loadPosts() {
   
 }
 //handles increase upvote when user clicks on upvote button
-function increaseCount(id:number) {
+function increaseCount(id:number,isnote:boolean=false) {
   newsApp.increamentUpvote(id);
+  if(isnote){
+    loadNotes();
+  }else{
+    
   loadPosts();
+  }
 }
 //handles flag button of htmls
 function flagUnflag(id:number,isnote:boolean=false) {

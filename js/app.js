@@ -297,9 +297,13 @@ function loadPosts() {
   document.getElementById("posts").innerHTML = row;
 }
 
-function increaseCount(id) {
+function increaseCount(id,isnote=false) {
   newsApp.increamentUpvote(id);
-  loadPosts();
+  if(isnote){
+    loadNotes();
+  }else{
+    loadPosts();
+  }
 }
 
 function flagUnflag(id,isnote=false) {
@@ -397,7 +401,7 @@ function loadPostNotes(pid) {
   <td>
     <button class='btnUpvoteAndFlag' onClick='increaseCount(${
       post.id
-    })'>^</button> <span class='littlegraytext'>${post.upvote} votes</span> | 
+    },${true})'>^</button> <span class='littlegraytext'>${post.upvote} votes</span> | 
     <span class='littlegraytext'>${timeDiffCalc(
       post.time,
       new Date()
