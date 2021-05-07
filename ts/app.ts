@@ -126,8 +126,8 @@ class NewsApp {
   rootDomains: IrootDomains; 
   constructor() {
     //fetch posts and root domains from local storage
-    this.posts =  JSON.parse(localStorage.getItem("posts")||"");;
-    this.rootDomains = JSON.parse(localStorage.getItem("rootDomains")||"");
+    this.posts =  JSON.parse(localStorage.getItem("posts")||"[]");;
+    this.rootDomains = JSON.parse(localStorage.getItem("rootDomains")||"{}");
     //if posts or rootdomains not found then assign default value
     if (this.posts == null || this.posts == undefined) {
       this.posts = [];
