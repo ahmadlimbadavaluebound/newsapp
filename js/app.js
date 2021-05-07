@@ -1,9 +1,11 @@
 class Notes {
-  constructor(note) {
+  constructor(id, note, parent = 0) {
     this.note = note;
     this.time = new Date().getTime();
     this.thread = [];
     this.deleted = false;
+    this.id = id;
+    this.parent = parent;
   }
 }
 
@@ -179,21 +181,34 @@ class NewsApp {
     this.saveToLocal();
   }
 
-  getTopSpammy(){
+  getTopSpammy() {
     var roots = [];
-    for(var i in this.rootDomains){
+    for (var i in this.rootDomains) {
       roots.push(this.rootDomains[i]);
     }
     return roots.sort(Domain.compareFlag);
   }
-  getTopVoted(){
+  getTopVoted() {
     var roots = [];
-    for(var i in this.rootDomains){
+    for (var i in this.rootDomains) {
       roots.push(this.rootDomains[i]);
     }
     return roots.sort(Domain.compareUpvote);
   }
-  addNote(post) {}
+  addNote(pid, data) {
+    if (data == null || data == undefined || data == "") {
+      alert("please enter valid comment");
+      return false;
+    }
+    this.posts[pid].notes.push(new Notes(this.posts[pid].notes.length, data));
+    this.saveToLocal();
+    return true;
+  }
+
+  deleteComment(pid,cid){
+    this.posts[pid].notes[cid].deleted = true;
+    this.saveToLocal();
+  }
 }
 
 var newsApp = new NewsApp();
@@ -207,15 +222,15 @@ function formAddPost() {
 function timeDiffCalc(dateFuture, dateNow) {
   let diffInMilliSeconds = Math.abs(dateFuture - dateNow) / 1000;
 
-  // calculate days
+  // calculate days 86400 seconds in a day
   const days = Math.floor(diffInMilliSeconds / 86400);
   diffInMilliSeconds -= days * 86400;
 
-  // calculate hours
+  // calculate hours 3600 seconds in hour
   const hours = Math.floor(diffInMilliSeconds / 3600) % 24;
   diffInMilliSeconds -= hours * 3600;
 
-  // calculate minutes
+  // calculate minutes 60
   const minutes = Math.floor(diffInMilliSeconds / 60) % 60;
   diffInMilliSeconds -= minutes * 60;
 
@@ -227,9 +242,9 @@ function timeDiffCalc(dateFuture, dateNow) {
     difference += `${hours} hours, `;
   }
   if (minutes > 0) {
-    difference += `${minutes} minutes`;
+    difference += `${minutes} minutes, `;
   }
-  difference += ` ago `;
+  difference += `${Math.floor(diffInMilliSeconds)} seconds ago `;
   return difference;
 }
 
@@ -269,7 +284,9 @@ function loadPosts() {
           posts[i].time,
           new Date()
         )}</span> | 
-        <span class='littlegraytext'>${posts[i].notes.length} notes</span> |
+        <a class='littlegraytext' href='Notes.html?pid=${posts[i].id}'>${
+      posts[i].notes.length
+    } notes</a> |
         <span class='littlegraytext'><button class='btnUpvoteAndFlag' onClick='flagUnflag(${
           posts[i].id
         })'>${isFlagged}</button></span>
@@ -285,12 +302,17 @@ function increaseCount(id) {
   loadPosts();
 }
 
-function flagUnflag(id) {
+function flagUnflag(id,isnote=false) {
   newsApp.flagUnflag(id);
+  if(isnote){
+    loadNotes();
+  }else{
+    
   loadPosts();
+  }
 }
 
-function Spammy(){
+function Spammy() {
   var row = `<tr class="header" >
   <td colspan="3">
       <button class="headerLogo" onClick='window.location.href="index.html";'>A</button>
@@ -304,20 +326,20 @@ function Spammy(){
 
   var spammedDomains = newsApp.getTopSpammy();
 
-  for(var i=0;i<spammedDomains.length && i < 10;i++){
-    if(spammedDomains[i].flag<1){
+  for (var i = 0; i < spammedDomains.length && i < 10; i++) {
+    if (spammedDomains[i].flag < 1) {
       break;
     }
-    row+= `<tr class='center'>
-      <td>${i+1}</td>
+    row += `<tr class='center'>
+      <td>${i + 1}</td>
       <td>${spammedDomains[i].domainName}</td>
       <td>${spammedDomains[i].flag}</td>
-    </tr>`
+    </tr>`;
   }
   document.getElementById("spammy").innerHTML = row;
 }
 
-function Upvoted(){
+function Upvoted() {
   var row = `<tr class="header" >
   <td colspan="3">
       <button class="headerLogo" onClick='window.location.href="index.html";'>A</button>
@@ -331,12 +353,94 @@ function Upvoted(){
 
   var topDomains = newsApp.getTopVoted();
 
-  for(var i=0;i<topDomains.length && i < 10;i++){
-    row+= `<tr class='center'>
-      <td>${i+1}</td>
+  for (var i = 0; i < topDomains.length && i < 10; i++) {
+    row += `<tr class='center'>
+      <td>${i + 1}</td>
       <td>${topDomains[i].domainName}</td>
       <td>${topDomains[i].upvote}</td>
-    </tr>`
+    </tr>`;
   }
   document.getElementById("upvoted").innerHTML = row;
+}
+
+function loadNotes() {
+  const urlParams = new URLSearchParams(window.location.search);
+  var pid = urlParams.get("pid");
+  var nid = urlParams.get("nid");
+  if (nid == null || nid == undefined) {
+    loadPostNotes(pid, nid);
+  } else {
+    loadNotesThread(pid, nid);
+  }
+}
+
+function loadPostNotes(pid) {
+  var row = `<tr class="header" >
+  <td colspan="3">
+      <button class="headerLogo" onClick='window.location.href="index.html";'>A</button>
+      <p class="headertext">&nbsp;News App &nbsp;<a href="AddPost.html" class="headerLinks">New</a> | <a href='MostSpammy.html' class="headerLinks">Most Spammy</a> | <a href='MostUpvoted.html' class="headerLinks">Most Upvoted</a></p>
+  </td>
+</tr>`;
+  var post = newsApp.getSpecificPost(pid);
+  var isFlagged = "flag";
+  if (post.flag) {
+    isFlagged = "unflag";
+  }
+  row += `<tr>
+  <td><a class='title' href='${post.url}'>${post.title}</a>
+    <a href="" class='littlegraytext'>
+        (${Domain.extractRootDomain(post.url)})
+    </a>
+  </td>
+</tr>
+<tr>
+  <td>
+    <button class='btnUpvoteAndFlag' onClick='increaseCount(${
+      post.id
+    })'>^</button> <span class='littlegraytext'>${post.upvote} votes</span> | 
+    <span class='littlegraytext'>${timeDiffCalc(
+      post.time,
+      new Date()
+    )}</span> | 
+    <a class='littlegraytext' href='Notes.html?pid=${post.id}'>${
+    post.notes.length
+  } notes</a> |
+    <span class='littlegraytext'><button class='btnUpvoteAndFlag' onClick='flagUnflag(${
+      post.id
+    },${true})'>${isFlagged}</button></span>
+  </td>
+</tr>`;
+  row += `<tr><td colspan='2'><form method='get' action='Notes.html' onSubmit='return addNote(${pid});'><input type='hidden' id='pid' name='pid' value='${pid}'/><textarea id='postnote' rows=4 cols='30'></textarea><br/><input type='submit' value='Add Note'></form></td></tr>`;
+  row += loadNotesRecursively(post);
+  document.getElementById("notes").innerHTML = row;
+}
+
+function loadNotesThread(pid, nid) {}
+
+function addNote(pid) {
+  var data = document.getElementById("postnote").value.trim();
+  return newsApp.addNote(pid, data);
+}
+function loadNotesRecursively(post){
+  var notes = ``;
+  for(var i in post.notes){
+    notes += `<tr><td class='littlegraytext'>&nbsp;${timeDiffCalc(
+      post.notes[i].time,
+      new Date()
+    )}</td></tr>`;
+    var classforComment=``;
+    if(post.notes[i].deleted){
+      classforComment = `deletedNote`;
+    }
+    notes += `<tr><td class='${classforComment}'>&nbsp;${post.notes[i].note}</td></tr>`;
+    notes += `<tr><td>&nbsp;<a href='#' class='note'>reply</a> <span class='littlegraytext'><button class='btnUpvoteAndFlag note' onClick='deleteComment(${
+      post.id
+    },${post.notes[i].id})'>delete</button></span></td></tr>`;
+  }
+  return notes;
+}
+
+function deleteComment(pid,cid){
+  newsApp.deleteComment(pid,cid);
+  loadNotes();
 }

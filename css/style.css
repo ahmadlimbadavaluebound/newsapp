@@ -99,3 +99,17 @@ html {
 .center{
   text-align: center;
 }
+.note{
+  color: black;
+  font-size: 10px;
+  margin: 2px;
+  text-decoration: underline;
+}
+.borderSpacing{
+  border-collapse:separate;
+  border-spacing:0 4px;
+
+}
+.deletedNote{
+  text-decoration: line-through;
+}
