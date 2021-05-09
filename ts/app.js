@@ -100,9 +100,9 @@ var Post = /** @class */ (function () {
 var NewsApp = /** @class */ (function () {
     function NewsApp() {
         //fetch posts and root domains from local storage
-        this.posts = JSON.parse(localStorage.getItem("posts") || "");
+        this.posts = JSON.parse(localStorage.getItem("posts") || "[]");
         ;
-        this.rootDomains = JSON.parse(localStorage.getItem("rootDomains") || "");
+        this.rootDomains = JSON.parse(localStorage.getItem("rootDomains") || "{}");
         //if posts or rootdomains not found then assign default value
         if (this.posts == null || this.posts == undefined) {
             this.posts = [];
@@ -267,13 +267,18 @@ function loadPosts() {
     posts.sort(NewsApp.compare);
     var count = 1;
     var row = "<tr class=\"header\" >\n  <td colspan=\"2\">\n      <button class=\"headerLogo\" onClick='window.location.href=\"index.html\";'>A</button>\n      <p class=\"headertext\">&nbsp;News App &nbsp;<a href=\"AddPost.html\" class=\"headerLinks\">New</a> | <a href='MostSpammy.html' class=\"headerLinks\">Most Spammy</a> | <a href='MostUpvoted.html' class=\"headerLinks\">Most Upvoted</a></p>\n  </td>\n</tr>";
-    for (var i = 0; i < posts.length; i++) {
-        var isFlagged = "flag";
-        if (posts[i].flag) {
-            isFlagged = "unflag";
+    if (posts.length > 0) {
+        for (var i = 0; i < posts.length; i++) {
+            var isFlagged = "flag";
+            if (posts[i].flag) {
+                isFlagged = "unflag";
+            }
+            row += "<tr>\n        <td rowspan='2' class='sl'>\n          " + count + "</td><td><a class='title' href='" + posts[i].url + "'>" + posts[i].title + "</a>\n          <a href=\"\" class='littlegraytext'>\n              (" + Domain.extractRootDomain(posts[i].url) + ")\n          </a>\n        </td>\n      </tr>\n      <tr>\n        <td>\n          <button class='btnUpvoteAndFlag' onClick='increaseCount(" + posts[i].id + ")'>^</button> <span class='littlegraytext'>" + posts[i].upvote + " votes</span> | \n          <span class='littlegraytext'>" + timeDiffCalc(posts[i].time, new Date()) + "</span> | \n          <a class='littlegraytext' href='Notes.html?pid=" + posts[i].id + "'>" + posts[i].notes.length + " notes</a> |\n          <span class='littlegraytext'><button class='btnUpvoteAndFlag' onClick='flagUnflag(" + posts[i].id + ")'>" + isFlagged + "</button></span>\n        </td>\n      </tr>";
+            count++;
         }
-        row += "<tr>\n      <td rowspan='2' class='sl'>\n        " + count + "</td><td><a class='title' href='" + posts[i].url + "'>" + posts[i].title + "</a>\n        <a href=\"\" class='littlegraytext'>\n            (" + Domain.extractRootDomain(posts[i].url) + ")\n        </a>\n      </td>\n    </tr>\n    <tr>\n      <td>\n        <button class='btnUpvoteAndFlag' onClick='increaseCount(" + posts[i].id + ")'>^</button> <span class='littlegraytext'>" + posts[i].upvote + " votes</span> | \n        <span class='littlegraytext'>" + timeDiffCalc(posts[i].time, new Date()) + "</span> | \n        <a class='littlegraytext' href='Notes.html?pid=" + posts[i].id + "'>" + posts[i].notes.length + " notes</a> |\n        <span class='littlegraytext'><button class='btnUpvoteAndFlag' onClick='flagUnflag(" + posts[i].id + ")'>" + isFlagged + "</button></span>\n      </td>\n    </tr>";
-        count++;
+    }
+    else {
+        row += "<tr><th>No posts in last week please add by clicking on <a href=\"AddPost.html\" class=\"headerLinks\">New</a> </th></tr>";
     }
     var postsTable = document.querySelector("#posts");
     if (postsTable != null) {
